@@ -1,3 +1,8 @@
+/**
+ * MainLayout 컴포넌트
+ * 애플리케이션의 핵심 3분할 워크벤치 레이아웃을 정의합니다.
+ * 좌측 사이드바, 중앙 컨텐츠 영역, 우측 시각화 영역으로 구성됩니다.
+ */
 import {
   ResizableHandle,
   ResizablePanel,
@@ -50,7 +55,7 @@ export function MainLayout({ sidebar, content, visualizer }: MainLayoutProps) {
 
             {/* Right Visualizer 영역 */}
             <ResizablePanel defaultSize={60} minSize={40}>
-              <div className="h-full flex flex-col bg-[#09090b]">
+              <div className="h-full flex flex-col bg-card/30 backdrop-blur-sm">
                 {visualizer || (
                   <div className="flex-1 flex items-center justify-center text-muted-foreground">
                     Visualizer Workbench

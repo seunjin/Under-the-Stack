@@ -147,7 +147,7 @@ function LessonComponent() {
                 <div className="w-1.5 h-1.5 rounded-full bg-red-400" />
                 Call Stack
               </div>
-              <div className="flex-1 min-h-0 bg-black/40 border border-border/50 rounded-xl">
+              <div className="flex-1 min-h-0 bg-[#0c0c0e] border border-white/5 rounded-xl">
                 <StackView items={currentSystemState.stack} />
               </div>
             </div>
@@ -158,8 +158,8 @@ function LessonComponent() {
                 <div className="w-1.5 h-1.5 rounded-full bg-blue-400" />
                 Memory & State
               </div>
-              <div className="flex-1 min-h-0 bg-black/40 border border-border/50 rounded-xl p-4 overflow-auto">
-                <pre className="text-xs font-mono text-muted-foreground whitespace-pre-wrap">
+              <div className="flex-1 min-h-0 bg-[#0c0c0e] border border-white/5 rounded-xl p-4 overflow-auto">
+                <pre className="text-xs font-mono text-muted whitespace-pre-wrap">
                   {JSON.stringify(currentSystemState, null, 2)}
                 </pre>
               </div>
@@ -172,7 +172,7 @@ function LessonComponent() {
           </div>
 
           {/* Control Panel */}
-          <div className="h-20 mt-6 border-t border-white/5 flex items-center justify-between px-2 shrink-0">
+          <div className="h-20 mt-6 border-t border-border flex items-center justify-between px-2 shrink-0">
             <div className="flex items-center gap-3">
               <button
                 onClick={() =>
@@ -201,7 +201,7 @@ function LessonComponent() {
                     }),
                   })
                 }
-                className="h-10 px-8 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-all text-xs font-bold shadow-lg shadow-white/5 disabled:opacity-30"
+                className="h-10 px-8 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-all text-xs font-bold shadow-lg shadow-primary/20 disabled:opacity-30"
                 disabled={step >= TEST_LESSON.steps.length - 1}
               >
                 NEXT
@@ -212,7 +212,7 @@ function LessonComponent() {
               <div className="flex items-center gap-3">
                 <div className="h-1 w-32 bg-secondary rounded-full overflow-hidden">
                   <motion.div
-                    className="h-full bg-primary shadow-[0_0_10px_rgba(255,255,255,0.3)]"
+                    className="h-full bg-primary shadow-[0_0_10px_var(--color-primary)]"
                     animate={{
                       width: `${((step + 1) / TEST_LESSON.steps.length) * 100}%`,
                     }}
