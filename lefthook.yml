@@ -1,0 +1,6 @@
+pre-commit:
+  parallel: true
+  commands:
+    biome-check:
+      glob: "*.{js,ts,jsx,tsx,json}"
+      run: pnpm biome check --staged --write {staged_files}
