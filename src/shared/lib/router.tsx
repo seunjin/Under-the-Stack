@@ -7,10 +7,12 @@ import {
 import { motion } from 'framer-motion'
 import { useMemo } from 'react'
 import {
+  CurriculumSidebar,
   QueueView,
   StackView,
   type SystemState,
-  TEST_LESSON,
+  LESSONS,
+  type SimulationStep,
 } from '@/features/simulator'
 import { MainLayout } from '@/shared/components/layout/MainLayout'
 
@@ -63,7 +65,7 @@ interface LessonSearch {
   step: number
 }
 
-const lessonRoute = createRoute({
+export const lessonRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/lesson/$id',
   validateSearch: (search: Record<string, unknown>): LessonSearch => {
@@ -78,55 +80,47 @@ function LessonComponent() {
   const { id } = lessonRoute.useParams()
   const { step } = lessonRoute.useSearch()
 
+  const currentLesson = LESSONS[id] || LESSONS['engine-test']
+
   // Derived State Calculation
   const currentSystemState = useMemo(() => {
-    let state: SystemState = TEST_LESSON.initialState
+    let state: SystemState = currentLesson.initialState
     for (let i = 0; i <= step; i++) {
-      const currentStep = TEST_LESSON.steps.find((s) => s.id === i)
+      const currentStep = currentLesson.steps.find((s: SimulationStep) => s.id === i)
       if (currentStep) {
         state = currentStep.stateUpdate(state)
       }
     }
     return state
-  }, [step])
+  }, [step, currentLesson])
 
-  const currentStepData = TEST_LESSON.steps.find((s) => s.id === step)
+  const currentStepData = currentLesson.steps.find((s: SimulationStep) => s.id === step)
 
   return (
     <MainLayout
-      sidebar={
-        <div className="p-6">
-          <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-4">
-            Curriculum
-          </h2>
-          <div className="space-y-1">
-            <button className="w-full text-left px-3 py-2 text-sm bg-accent/50 rounded-md text-accent-foreground font-medium border border-border/50">
-              {TEST_LESSON.title}
-            </button>
-          </div>
-        </div>
-      }
+      sidebar={<CurriculumSidebar />}
       content={
         <div className="space-y-6">
           <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
-            <span>Lessons</span>
+            <span>학습 과정</span>
             <span>/</span>
             <span className="text-foreground uppercase">{id}</span>
           </div>
           <h2 className="text-3xl font-bold tracking-tight">
-            {TEST_LESSON.title}
+            {currentLesson.title}
           </h2>
           <div className="prose prose-invert max-w-none">
             <p className="text-lg text-muted-foreground leading-relaxed">
-              Step-by-step engine verification scenario. Observe how the stack
-              and heap change as we execute commands.
+              {currentLesson.id === 'engine-test'
+                ? 'Step-by-step engine verification scenario. Observe how the stack and heap change as we execute commands.'
+                : '프론트엔드 엔지니어를 위한 자료구조 실습 커리큘럼입니다. 시뮬레이터를 통해 내부 동작 원리를 파악하세요.'}
             </p>
           </div>
 
           <div className="rounded-xl border border-border bg-card/50 overflow-hidden shadow-sm">
             <div className="bg-muted/50 px-4 py-2 border-b border-border flex items-center justify-between">
               <span className="text-xs font-mono text-muted-foreground uppercase tracking-wider">
-                Current Explanation
+                현재 단계 설명 (Step Guide)
               </span>
             </div>
             <div className="p-6">
@@ -145,7 +139,7 @@ function LessonComponent() {
             <div className="flex-[0.3] flex flex-col">
               <div className="mb-3 text-[10px] font-mono text-muted-foreground uppercase tracking-widest flex items-center gap-2">
                 <div className="w-1.5 h-1.5 rounded-full bg-red-400" />
-                Call Stack
+                콜 스택 (Call Stack)
               </div>
               <div className="flex-1 min-h-0 bg-[#0c0c0e] border border-white/5 rounded-xl">
                 <StackView items={currentSystemState.stack} />
@@ -156,7 +150,7 @@ function LessonComponent() {
             <div className="flex-[0.7] flex flex-col">
               <div className="mb-3 text-[10px] font-mono text-muted-foreground uppercase tracking-widest flex items-center gap-2">
                 <div className="w-1.5 h-1.5 rounded-full bg-blue-400" />
-                Memory & State
+                메모리 & 상태 (Memory & State)
               </div>
               <div className="flex-1 min-h-0 bg-[#0c0c0e] border border-white/5 rounded-xl p-4 overflow-auto">
                 <pre className="text-xs font-mono text-muted whitespace-pre-wrap">
@@ -188,23 +182,23 @@ function LessonComponent() {
                 className="h-10 px-6 rounded-md border border-border bg-transparent hover:bg-accent transition-all text-xs font-bold disabled:opacity-30"
                 disabled={step === 0}
               >
-                PREV
+                이전 (PREV)
               </button>
               <button
                 onClick={() =>
                   router.navigate({
                     to: '/lesson/$id',
                     params: { id },
-                    search: (prev) => ({
+                    search: (prev: any) => ({
                       ...prev,
-                      step: Math.min(TEST_LESSON.steps.length - 1, step + 1),
+                      step: Math.min(currentLesson.steps.length - 1, step + 1),
                     }),
                   })
                 }
                 className="h-10 px-8 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-all text-xs font-bold shadow-lg shadow-primary/20 disabled:opacity-30"
-                disabled={step >= TEST_LESSON.steps.length - 1}
+                disabled={step >= currentLesson.steps.length - 1}
               >
-                NEXT
+                다음 (NEXT)
               </button>
             </div>
 
@@ -214,12 +208,12 @@ function LessonComponent() {
                   <motion.div
                     className="h-full bg-primary shadow-[0_0_10px_var(--color-primary)]"
                     animate={{
-                      width: `${((step + 1) / TEST_LESSON.steps.length) * 100}%`,
+                      width: `${((step + 1) / currentLesson.steps.length) * 100}%`,
                     }}
                   />
                 </div>
                 <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest">
-                  {step + 1} / {TEST_LESSON.steps.length}
+                  {step + 1} / {currentLesson.steps.length}
                 </span>
               </div>
             </div>

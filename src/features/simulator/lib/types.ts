@@ -1,8 +1,8 @@
 export interface SystemState {
   stack: string[]
   queue: string[]
-  heap: Record<string, any>
-  variables: Record<string, any>
+  heap: Record<string, unknown>
+  variables: Record<string, unknown>
 }
 
 export interface SimulationStep {
