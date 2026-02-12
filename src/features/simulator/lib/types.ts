@@ -19,6 +19,26 @@ export interface LessonData {
   steps: SimulationStep[]
 }
 
+export interface LessonMeta {
+  id: string
+  title: string
+  description: string
+  iconType?: 'base' | 'applied'
+}
+
+export interface Module {
+  id: string
+  title: string
+  lessons: LessonMeta[]
+}
+
+export interface Track {
+  id: string
+  title: string
+  description: string
+  modules: Module[]
+}
+
 export const INITIAL_SYSTEM_STATE: SystemState = {
   stack: [],
   queue: [],

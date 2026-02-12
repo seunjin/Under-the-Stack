@@ -1,44 +1,58 @@
-export interface LessonMeta {
-  id: string;
-  title: string;
-  description: string;
-  duration?: string;
-}
+import type { Track } from './types'
 
-export interface Section {
-  id: string;
-  title: string;
-  lessons: LessonMeta[];
-}
-
-export const CURRICULUM: Section[] = [
+/**
+ * 전용 트랙 구조 (Web System Thinking)
+ * - Base Systems: CS 기초
+ * - Applied Web Systems: 실무 매핑
+ */
+export const CURRICULUM: Track[] = [
   {
-    id: 'overview',
-    title: '섹션 1. 개요 (Overview)',
-    lessons: [
-      { id: 'intro', title: '수강생 여러분께 하고 싶은 말', duration: '03:22', description: '플랫폼 소개 및 학습 방법 안내' },
-      { id: 'ds-al-intro', title: '자료구조와 알고리즘이란?', duration: '07:55', description: 'CS의 근간이 되는 자료구조와 알고리즘의 개념' },
-      { id: 'complexity', title: '시간복잡도 (Time Complexity)', duration: '08:40', description: 'Big-O 표기법과 성능 분석의 기초' },
-      { id: 'env-setup', title: '자바스크립트 실행 환경 구축', duration: '06:13', description: '실습을 위한 엔진 및 디버깅 환경 설정' },
+    id: 'base-systems',
+    title: 'Track 1. Base Systems',
+    description: '웹 개발을 위한 필수 CS 기초 체력',
+    modules: [
+      {
+        id: 'foundations',
+        title: 'Foundations',
+        lessons: [
+          { id: 'complexity', title: '시간복잡도 (Time Complexity)', description: 'Big-O 감각과 성능 분석의 기초', iconType: 'base' },
+          { id: 'array', title: '배열 (Array)', description: '메모리 상의 선형 구조와 접근 비용', iconType: 'base' },
+          { id: 'stack-queue', title: '스택 & 큐 (Stack & Queue)', description: 'LIFO와 FIFO 구조의 이해', iconType: 'base' },
+          { id: 'hash-table', title: '해시테이블 (Hash Table)', description: 'Key-Value 쌍과 O(1) 탐색의 비밀', iconType: 'base' },
+        ],
+      },
+      {
+        id: 'structures',
+        title: 'Data Structures',
+        lessons: [
+          { id: 'linked-list', title: '연결리스트 (Linked List)', description: '노드와 포인터를 이용한 동적 데이터', iconType: 'base' },
+          { id: 'tree', title: '트리 (Tree)', description: '계층형 데이터와 탐색 알고리즘', iconType: 'base' },
+        ],
+      },
     ],
   },
   {
-    id: 'data-structures',
-    title: '섹션 2. 자료구조 (Data Structures)',
-    lessons: [
-      { id: 'array', title: '배열 (Array)', duration: '04:55', description: '메모리 상의 선형 구조와 인덱싱' },
-      { id: 'linked-list-concept', title: '연결리스트 (Linked List) - 개념', duration: '05:28', description: '노드와 포인터를 이용한 동적 데이터 관리' },
-      { id: 'stack-concept', title: '스택 (Stack) - 개념', duration: '06:27', description: 'LIFO 구조와 브라우저 콜 스택의 원리' },
-      { id: 'queue-concept', title: '큐 (Queue) - 개념', duration: '05:47', description: 'FIFO 구조와 이벤트 루프 테스크 큐' },
+    id: 'applied-systems',
+    title: 'Track 2. Applied Web Systems',
+    description: '실무 기술로 재해석하는 시스템 사고',
+    modules: [
+      {
+        id: 'runtime',
+        title: 'Runtime & Rendering',
+        lessons: [
+          { id: 'event-loop', title: '이벤트 루프 (Event Loop)', description: 'Queue와 Stack으로 이해하는 비동기 JS', iconType: 'applied' },
+          { id: 'virtual-dom', title: '가상 DOM (Virtual DOM)', description: 'Tree와 Diffing 알고리즘의 실체', iconType: 'applied' },
+          { id: 'react-rendering', title: 'React 리스트 렌더링', description: 'Array 구조가 렌더링 성능에 미치는 영향', iconType: 'applied' },
+        ],
+      },
+      {
+        id: 'network-db',
+        title: 'Network & Persistence',
+        lessons: [
+          { id: 'http-cache', title: 'HTTP 캐싱 전략', description: 'Hash와 캐시 헤더의 연결고리', iconType: 'applied' },
+          { id: 'db-index', title: 'DB 인덱스 (B-Tree)', description: '왜 인덱스를 걸면 검색이 빨라질까?', iconType: 'applied' },
+        ],
+      },
     ],
   },
-  {
-    id: 'algorithms',
-    title: '섹션 3. 알고리즘',
-    lessons: [
-      { id: 'recursion', title: '재귀', duration: '14:25', description: '자기 자신을 호출하는 함수와 기저 사례' },
-      { id: 'sorting-bubble', title: '정렬 - 버블정렬', duration: '10:15', description: '인접 요소 비교를 통한 기초 정렬' },
-      { id: 'dp-memoization', title: '동적 프로그래밍 - 메모이제이션', duration: '13:32', description: '중복 계산을 피하는 효율적 최적화' },
-    ],
-  },
-];
+]
