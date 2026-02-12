@@ -1,0 +1,205 @@
+import { createRootRoute, createRoute, createRouter, Outlet } from '@tanstack/react-router'
+import { MainLayout } from '@/components/layout/MainLayout'
+import { useMemo } from 'react'
+import { TEST_LESSON } from './engine/mockData'
+import { type SystemState } from './engine/types'
+import { StackView } from '@/components/visualizer/StackView'
+import { QueueView } from '@/components/visualizer/QueueView'
+import { motion } from 'framer-motion'
+
+// Root Route
+const rootRoute = createRootRoute({
+    component: () => (
+        <>
+            <Outlet />
+        </>
+    ),
+})
+
+// Index Route
+const indexRoute = createRoute({
+    getParentRoute: () => rootRoute,
+    path: '/',
+    component: () => (
+        <MainLayout
+            content={
+                <div className="space-y-6">
+                    <h1 className="text-4xl font-extrabold tracking-tight lg:text-5xl">
+                        Master Web Systems
+                    </h1>
+                    <p className="text-xl text-muted-foreground leading-relaxed">
+                        Interactive visualizations for modern web engineering.
+                        Understand the stack, the heap, and the event loop through live simulations.
+                    </p>
+                    <div className="pt-4">
+                        <button
+                            onClick={() => router.navigate({ to: '/lesson/$id', params: { id: 'engine-test' }, search: { step: 0 } })}
+                            className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground shadow hover:bg-primary/90 h-10 px-8 py-2"
+                        >
+                            Start Learning
+                        </button>
+                    </div>
+                </div>
+            }
+        />
+    ),
+})
+
+// Lesson Route
+interface LessonSearch {
+    step: number
+}
+
+const lessonRoute = createRoute({
+    getParentRoute: () => rootRoute,
+    path: '/lesson/$id',
+    validateSearch: (search: Record<string, unknown>): LessonSearch => {
+        return {
+            step: Number(search?.step ?? 0),
+        }
+    },
+    component: LessonComponent,
+})
+
+function LessonComponent() {
+    const { id } = lessonRoute.useParams()
+    const { step } = lessonRoute.useSearch()
+
+    // Derived State Calculation
+    const currentSystemState = useMemo(() => {
+        let state: SystemState = TEST_LESSON.initialState
+        for (let i = 0; i <= step; i++) {
+            const currentStep = TEST_LESSON.steps.find(s => s.id === i)
+            if (currentStep) {
+                state = currentStep.stateUpdate(state)
+            }
+        }
+        return state
+    }, [step])
+
+    const currentStepData = TEST_LESSON.steps.find(s => s.id === step)
+
+    return (
+        <MainLayout
+            sidebar={
+                <div className="p-6">
+                    <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-4">Curriculum</h2>
+                    <div className="space-y-1">
+                        <button
+                            className="w-full text-left px-3 py-2 text-sm bg-accent/50 rounded-md text-accent-foreground font-medium border border-border/50"
+                        >
+                            {TEST_LESSON.title}
+                        </button>
+                    </div>
+                </div>
+            }
+            content={
+                <div className="space-y-6">
+                    <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+                        <span>Lessons</span>
+                        <span>/</span>
+                        <span className="text-foreground uppercase">{id}</span>
+                    </div>
+                    <h2 className="text-3xl font-bold tracking-tight">{TEST_LESSON.title}</h2>
+                    <div className="prose prose-invert max-w-none">
+                        <p className="text-lg text-muted-foreground leading-relaxed">
+                            Step-by-step engine verification scenario.
+                            Observe how the stack and heap change as we execute commands.
+                        </p>
+                    </div>
+
+                    <div className="rounded-xl border border-border bg-card/50 overflow-hidden shadow-sm">
+                        <div className="bg-muted/50 px-4 py-2 border-b border-border flex items-center justify-between">
+                            <span className="text-xs font-mono text-muted-foreground uppercase tracking-wider">Current Explanation</span>
+                        </div>
+                        <div className="p-6">
+                            <p className="text-base text-foreground/90 leading-relaxed font-medium">
+                                {currentStepData?.description || "Initial state..."}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            }
+            visualizer={
+                <div className="flex-1 flex flex-col p-6 h-full overflow-hidden">
+                    {/* Top Panel: Stack & Viz */}
+                    <div className="flex-1 flex gap-6 min-h-0">
+                        {/* Call Stack Section */}
+                        <div className="flex-[0.3] flex flex-col">
+                            <div className="mb-3 text-[10px] font-mono text-muted-foreground uppercase tracking-widest flex items-center gap-2">
+                                <div className="w-1.5 h-1.5 rounded-full bg-red-400" />
+                                Call Stack
+                            </div>
+                            <div className="flex-1 min-h-0 bg-black/40 border border-border/50 rounded-xl">
+                                <StackView items={currentSystemState.stack} />
+                            </div>
+                        </div>
+
+                        {/* Heap / State Section */}
+                        <div className="flex-[0.7] flex flex-col">
+                            <div className="mb-3 text-[10px] font-mono text-muted-foreground uppercase tracking-widest flex items-center gap-2">
+                                <div className="w-1.5 h-1.5 rounded-full bg-blue-400" />
+                                Memory & State
+                            </div>
+                            <div className="flex-1 min-h-0 bg-black/40 border border-border/50 rounded-xl p-4 overflow-auto">
+                                <pre className="text-xs font-mono text-muted-foreground whitespace-pre-wrap">
+                                    {JSON.stringify(currentSystemState, null, 2)}
+                                </pre>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Middle Panel: Task Queue (Dummy for now) */}
+                    <div className="mt-6">
+                        <QueueView items={currentSystemState.queue} />
+                    </div>
+
+                    {/* Control Panel */}
+                    <div className="h-20 mt-6 border-t border-white/5 flex items-center justify-between px-2 shrink-0">
+                        <div className="flex items-center gap-3">
+                            <button
+                                onClick={() => router.navigate({ to: '/lesson/$id', params: { id }, search: (prev) => ({ ...prev, step: Math.max(0, step - 1) }) })}
+                                className="h-10 px-6 rounded-md border border-border bg-transparent hover:bg-accent transition-all text-xs font-bold disabled:opacity-30"
+                                disabled={step === 0}
+                            >
+                                PREV
+                            </button>
+                            <button
+                                onClick={() => router.navigate({ to: '/lesson/$id', params: { id }, search: (prev) => ({ ...prev, step: Math.min(TEST_LESSON.steps.length - 1, step + 1) }) })}
+                                className="h-10 px-8 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-all text-xs font-bold shadow-lg shadow-white/5 disabled:opacity-30"
+                                disabled={step >= TEST_LESSON.steps.length - 1}
+                            >
+                                NEXT
+                            </button>
+                        </div>
+
+                        <div className="flex flex-col items-end gap-1.5">
+                            <div className="flex items-center gap-3">
+                                <div className="h-1 w-32 bg-secondary rounded-full overflow-hidden">
+                                    <motion.div
+                                        className="h-full bg-primary shadow-[0_0_10px_rgba(255,255,255,0.3)]"
+                                        animate={{ width: `${((step + 1) / TEST_LESSON.steps.length) * 100}%` }}
+                                    />
+                                </div>
+                                <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest">
+                                    {step + 1} / {TEST_LESSON.steps.length}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        />
+    )
+}
+
+// Create Router
+const routeTree = rootRoute.addChildren([indexRoute, lessonRoute])
+
+export const router = createRouter({ routeTree })
+
+declare module '@tanstack/react-router' {
+    interface Register {
+        router: typeof router
+    }
+}
