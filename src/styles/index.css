@@ -129,4 +129,19 @@
   .prose :is(h1, h2, h3, h4, h5) {
     margin-bottom: 0.5em !important;
   }
+
+  
+  .prose {
+    :where(code):not(:where([class~="not-prose"],[class~="not-prose"] *))::before {
+      content:"" !important
+    }
+    :where(code):not(:where([class~="not-prose"],[class~="not-prose"] *))::after {
+      content:"" !important
+    }
+  }
+.prose blockquote{
+  padding-block: 0.25rem;
+}
+
+  .prose blockquote :where(p):not(:where([class~="not-prose"],[class~="not-prose"] *)) {margin: 0 !important;}
 }

@@ -12,13 +12,10 @@ import {
   CurriculumSidebar,
   getDeepDive,
   LESSONS,
-  type LessonMeta,
-  type Module,
   QueueView,
   type SimulationStep,
   StackView,
   type SystemState,
-  type Track,
 } from '@/features/simulator'
 import { MainLayout } from '@/shared/components/layout/MainLayout'
 import { MarkdownRenderer } from '@/shared/components/markdown/MarkdownRenderer'
@@ -88,7 +85,27 @@ function LessonComponent() {
   const { id } = lessonRoute.useParams()
   const { step } = lessonRoute.useSearch()
 
-  const currentLesson = LESSONS[id] || LESSONS['engine-test']
+  const resolvedLessonId = LESSONS[id] ? id : 'engine-test'
+  const currentLesson = LESSONS[resolvedLessonId] || LESSONS['engine-test']
+  const orderedLessons = useMemo(
+    () =>
+      CURRICULUM.flatMap((track) =>
+        track.modules.flatMap((m) => m.lessons),
+      ).filter((lesson) => Boolean(LESSONS[lesson.id])),
+    [],
+  )
+  const currentLessonIndex = useMemo(
+    () => orderedLessons.findIndex((lesson) => lesson.id === resolvedLessonId),
+    [orderedLessons, resolvedLessonId],
+  )
+  const previousLesson = useMemo(() => {
+    if (currentLessonIndex <= 0) return undefined
+    return orderedLessons[currentLessonIndex - 1]
+  }, [currentLessonIndex, orderedLessons])
+  const nextLesson = useMemo(() => {
+    if (currentLessonIndex < 0) return undefined
+    return orderedLessons[currentLessonIndex + 1]
+  }, [currentLessonIndex, orderedLessons])
 
   // Derived State Calculation
   const currentSystemState = useMemo(() => {
@@ -116,7 +133,7 @@ function LessonComponent() {
           <div className="flex items-center gap-2 text-[12px] font-medium text-muted-foreground/60 uppercase tracking-widest mb-4">
             <span>Lesson Module</span>
             <span className="opacity-30">/</span>
-            <span className="text-primary/70">{id}</span>
+            <span className="text-primary/70">{resolvedLessonId}</span>
           </div>
 
           <motion.article
@@ -139,45 +156,47 @@ function LessonComponent() {
               <MarkdownRenderer content={currentLesson.content} />
             )}
 
-            {/* Deep Dive CTA */}
-            {CURRICULUM.flatMap((t: Track) =>
-              t.modules.flatMap((m: Module) => m.lessons),
-            ).find((l: LessonMeta) => l.id === id)?.deepDiveId && (
-              <div className="mt-12 p-8 rounded-2xl bg-neutral-900 text-white shadow-2xl border border-white/10 relative overflow-hidden group">
-                <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                  <span className="text-8xl font-black italic">DEEP</span>
-                </div>
-                <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-                  <div className="space-y-2">
-                    <div className="inline-flex items-center px-2 py-0.5 rounded bg-blue-500 text-[10px] font-bold uppercase tracking-widest">
-                      Expertise
-                    </div>
-                    <h3 className="text-2xl font-bold tracking-tight">
-                      수석 엔지니어의 Engineering Deep-Dive
-                    </h3>
-                    <p className="text-neutral-400 max-w-lg leading-relaxed">
-                      단순한 이론을 넘어, 실제 프론트엔드 코드베이스에서
-                      발생하는 고난도 성능 최적화 전략과 설계 패턴을 깊이 있게
-                      탐구합니다.
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const lessonMeta = CURRICULUM.flatMap((t: Track) =>
-                        t.modules.flatMap((m: Module) => m.lessons),
-                      ).find((l: LessonMeta) => l.id === id)
-                      if (lessonMeta?.deepDiveId) {
+            {/* Lesson Navigation CTA */}
+            {(previousLesson || nextLesson) && (
+              <div className="mt-12 border-t border-border">
+
+                <div className="py-6 flex flex-col gap-4">
+                  <div className="flex justify-between items-center gap-4">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        previousLesson &&
                         router.navigate({
-                          to: '/deep-dive/$id',
-                          params: { id: lessonMeta.deepDiveId },
+                          to: '/lesson/$id',
+                          params: { id: previousLesson.id },
+                          search: { step: 0 },
                         })
                       }
-                    }}
-                    className="shrink-0 bg-white text-black hover:bg-neutral-200 px-6 py-3 rounded-xl font-bold transition-all transform hover:scale-105"
-                  >
-                    심화 학습 시작하기 →
-                  </button>
+                      disabled={!previousLesson}
+                      className="h-12 cursor-pointer w-fit text-sm text-primary/80 hover:text-primary font-semibold  px-4 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                    >
+                      {previousLesson
+                        ? `← Previous: ${previousLesson.title}`
+                        : '← No previous lesson'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        nextLesson &&
+                        router.navigate({
+                          to: '/lesson/$id',
+                          params: { id: nextLesson.id },
+                          search: { step: 0 },
+                        })
+                      }
+                      disabled={!nextLesson}
+                      className="h-12 cursor-pointer w-fit text-sm text-primary/80 hover:text-primary font-semibold  px-4 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                    >
+                      {nextLesson
+                        ? `Next: ${nextLesson.title} →`
+                        : 'No next lesson →'}
+                    </button>
+                  </div>
                 </div>
               </div>
             )}
@@ -262,7 +281,7 @@ function LessonComponent() {
                 onClick={() =>
                   router.navigate({
                     to: '/lesson/$id',
-                    params: { id },
+                    params: { id: resolvedLessonId },
                     search: (prev) => ({
                       ...prev,
                       step: Math.max(0, step - 1),
@@ -279,7 +298,7 @@ function LessonComponent() {
                 onClick={() =>
                   router.navigate({
                     to: '/lesson/$id',
-                    params: { id },
+                    params: { id: resolvedLessonId },
                     search: (prev) => ({
                       ...prev,
                       step: Math.min(currentLesson.steps.length - 1, step + 1),
