@@ -159,7 +159,6 @@ function LessonComponent() {
             {/* Lesson Navigation CTA */}
             {(previousLesson || nextLesson) && (
               <div className="mt-12 border-t border-border">
-
                 <div className="py-6 flex flex-col gap-4">
                   <div className="flex justify-between items-center gap-4">
                     <button
